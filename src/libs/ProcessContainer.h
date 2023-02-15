@@ -3,12 +3,17 @@
 
 #include <any>
 
+template<class RetVal, class ...Args>
 class ProcessContainer {
 public:
+    enum UnitType {
+        MANAGER, WORKER
+    };
+
     ProcessContainer(int argc, char **argv): argc_(argc), argv_(argv) {}
     virtual ~ProcessContainer() = default;
 
-    virtual std::any execute() = 0;
+    virtual RetVal execute(Args... args) = 0;
 
 protected:
     int argc_;
