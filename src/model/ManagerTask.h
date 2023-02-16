@@ -8,12 +8,12 @@
 
 namespace mpi = boost::mpi;
 
-class ManagerTask : public ProcessContainer<Matrix, const mpi::communicator &> {
+class ManagerTask : public ProcessContainer<void, const mpi::communicator &, const std::string &, const std::string &> {
 public:
     ManagerTask(int argc, char **argv)
-            : ProcessContainer<Matrix, const mpi::communicator &>(argc, argv) {}
+            : ProcessContainer<void, const mpi::communicator &, const std::string &, const std::string &>(argc, argv) {}
 
-    Matrix execute(const mpi::communicator &) override;
+    void execute(const mpi::communicator &, const std::string &, const std::string &) override;
 };
 
 

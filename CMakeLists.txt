@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 project(taskDistributor)
 
-set(CMAKE_CXX_STANDARD 17)
-
-#find_package(MPI REQUIRED)
+set(CMAKE_CXX_STANDARD 20 REQUIRED)
 
 add_executable(taskDistributor
         main.cpp
@@ -21,9 +19,10 @@ add_executable(taskDistributor
         src/utils/ClasterMeasurementUtil.cpp
         src/utils/ClasterMeasurementUtil.h
         src/model/MatrixBuilder.cpp
-        src/model/MatrixBuilder.h)
-
-#target_link_libraries(taskDistributor MPI::MPI_CXX)
+        src/model/MatrixBuilder.h
+        src/utils/Log.hpp
+        src/utils/Colormod.h
+        src/utils/PrettyPrint.h src/utils/Format.h)
 
 set(BOOST_ROOT /usr/include/boost)
 FIND_PACKAGE(Boost 1.4 COMPONENTS mpi serialization REQUIRED)

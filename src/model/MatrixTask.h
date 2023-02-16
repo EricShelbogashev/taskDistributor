@@ -5,11 +5,11 @@
 #include "../model/Matrix.h"
 #include <boost/mpi.hpp>
 
-class MatrixTask : public ProcessContainer<Matrix, const boost::mpi::communicator &, int> {
+class MatrixTask : public ProcessContainer<void, const boost::mpi::communicator &, int, const std::string &, const std::string &> {
 public:
     MatrixTask(int argc, char **argv);
 
-    Matrix execute(const boost::mpi::communicator &, int) override;
+    void execute(const boost::mpi::communicator &, int, const std::string &, const std::string &) override;
 };
 
 

@@ -14,6 +14,6 @@ int main(int argc, char **argv) {
     mpi::communicator world;
 
     MatrixTask container(argc, argv);
-    container.execute(world, 0);
+    container.execute(world, 0, argv[1], argv[2]);
     return 0;
 }

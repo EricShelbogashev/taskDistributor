@@ -5,9 +5,12 @@
 
 std::ostream &operator<<(std::ostream &os, const Matrix &matrix);
 
-void randomFillMatrix(Matrix &matrix);
+namespace utils {
+    void randomFillMatrix(Matrix &matrix);
 
-Matrix readMatrix(std::ifstream &stream);
+    Matrix readMatrix(std::ifstream &stream);
 
+    void saveMatrix(std::ostream &stream, const Matrix &matrix);
+}
 
 #endif //TASKDISTRIBUTOR_MATRIXUTILS_H
