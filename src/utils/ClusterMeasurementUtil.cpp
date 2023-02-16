@@ -1,10 +1,10 @@
-#include "ClasterMeasurementUtil.h"
+#include "ClusterMeasurementUtil.h"
 #include <cmath>
 
-ClasterMeasurementUtil::ClasterMeasurementUtil(const Matrix &matrix, size_t processNumber) :
+ClusterMeasurementUtil::ClusterMeasurementUtil(const Matrix &matrix, size_t processNumber) :
         _matrix(matrix), _processNumber(processNumber), _sizes(processNumber), _displacements(processNumber) {}
 
-std::vector<int> ClasterMeasurementUtil::sizes() const {
+std::vector<int> ClusterMeasurementUtil::sizes() const {
     if (!_is_sized) {
         _is_sized = true;
         return _calculateSizes(_matrix);
@@ -12,7 +12,7 @@ std::vector<int> ClasterMeasurementUtil::sizes() const {
     return _sizes;
 }
 
-std::vector<int> ClasterMeasurementUtil::_calculateSizes(const Matrix &matrix) const {
+std::vector<int> ClusterMeasurementUtil::_calculateSizes(const Matrix &matrix) const {
     auto dimensionNumber = matrix.getDimensions().size();
 
     for (int i = 0; i < _processNumber; ++i) {
@@ -24,7 +24,7 @@ std::vector<int> ClasterMeasurementUtil::_calculateSizes(const Matrix &matrix) c
     return _sizes;
 }
 
-std::vector<int> ClasterMeasurementUtil::displacements() const {
+std::vector<int> ClusterMeasurementUtil::displacements() const {
     if (!_is_displacemented) {
         _is_displacemented = true;
         return _calculateDisplacements(_matrix);
@@ -32,7 +32,7 @@ std::vector<int> ClasterMeasurementUtil::displacements() const {
     return _displacements;
 }
 
-std::vector<int> ClasterMeasurementUtil::_calculateDisplacements(const Matrix &matrix) const {
+std::vector<int> ClusterMeasurementUtil::_calculateDisplacements(const Matrix &matrix) const {
     // Checking for instance.
     std::vector<int> sizesArr = sizes();
     for (int i = 1; i < _processNumber; ++i) {

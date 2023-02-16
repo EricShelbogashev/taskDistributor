@@ -1,7 +1,7 @@
 #include "ManagerTask.h"
 
 #include <boost/mpi.hpp>
-#include "../utils/ClasterMeasurementUtil.h"
+#include "../utils/ClusterMeasurementUtil.h"
 #include "../utils/MatrixUtils.h"
 #include "CalculateTask.h"
 #include "MatrixBuilder.h"
@@ -9,7 +9,7 @@
 #include "../utils/PrettyPrint.h"
 #include "../utils/Log.hpp"
 
-int &sendSizes(const mpi::communicator &communicator, const ClasterMeasurementUtil &measurementUtil) {
+int &sendSizes(const mpi::communicator &communicator, const ClusterMeasurementUtil &measurementUtil) {
     static int packagesNumber;
 
     auto sizes = measurementUtil.sizes();
@@ -19,7 +19,7 @@ int &sendSizes(const mpi::communicator &communicator, const ClasterMeasurementUt
     return packagesNumber;
 }
 
-void sendMatrix(const mpi::communicator &communicator, const ClasterMeasurementUtil &measurementUtil, std::vector<std::vector<float>> &dimensions, Matrix &matrix, int &packagesNumber) {
+void sendMatrix(const mpi::communicator &communicator, const ClusterMeasurementUtil &measurementUtil, std::vector<std::vector<float>> &dimensions, Matrix &matrix, int &packagesNumber) {
     /* Sending parties all non-root processes. */
     mpi::scatterv(communicator,
                   matrix.getDimensions(),
@@ -41,7 +41,7 @@ void ManagerTask::execute(const mpi::communicator &communicator, const std::stri
     assert(matrixA.width() == matrixB.height());
 
     /* Preparing to sending matrix parties all non-root processes. */
-    ClasterMeasurementUtil measurementA(matrixA, communicator.size());
+    ClusterMeasurementUtil measurementA(matrixA, communicator.size());
 
     int &packagesNumber = sendSizes(communicator, measurementA);
 
@@ -50,7 +50,7 @@ void ManagerTask::execute(const mpi::communicator &communicator, const std::stri
     sendMatrix(communicator, measurementA, matrixAPart, matrixA, packagesNumber);
 
     /* Sending matrix B parties all non-root processes. */
-    ClasterMeasurementUtil measurementB(matrixB, communicator.size());
+    ClusterMeasurementUtil measurementB(matrixB, communicator.size());
     sendSizes(communicator, measurementB);
 
     std::vector<std::vector<float>> matrixBPart(packagesNumber);

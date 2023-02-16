@@ -1,21 +1,21 @@
-#ifndef TASKDISTRIBUTOR_CLASTERMEASUREMENTUTIL_H
-#define TASKDISTRIBUTOR_CLASTERMEASUREMENTUTIL_H
+#ifndef TASKDISTRIBUTOR_CLUSTERMEASUREMENTUTIL_H
+#define TASKDISTRIBUTOR_CLUSTERMEASUREMENTUTIL_H
 
 
 #include <vector>
 #include "../model/Matrix.h"
 
-class ClasterMeasurementUtil {
+class ClusterMeasurementUtil {
 public:
-    explicit ClasterMeasurementUtil(const Matrix &matrix, size_t processNumber);
+    explicit ClusterMeasurementUtil(const Matrix &matrix, size_t processNumber);
 
     [[nodiscard]] std::vector<int> sizes() const;
 
     [[nodiscard]] std::vector<int> displacements() const;
 
-    ClasterMeasurementUtil(const ClasterMeasurementUtil &other) = delete;
+    ClusterMeasurementUtil(const ClusterMeasurementUtil &other) = delete;
 
-    ClasterMeasurementUtil(ClasterMeasurementUtil &&other) = delete;
+    ClusterMeasurementUtil(ClusterMeasurementUtil &&other) = delete;
 
 private:
     size_t _processNumber;
@@ -30,4 +30,4 @@ private:
 };
 
 
-#endif //TASKDISTRIBUTOR_CLASTERMEASUREMENTUTIL_H
+#endif //TASKDISTRIBUTOR_CLUSTERMEASUREMENTUTIL_H
