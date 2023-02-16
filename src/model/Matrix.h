@@ -11,9 +11,9 @@ class Matrix {
     friend class MatrixWrapper;
 
 public:
-    explicit Matrix(size_t height, size_t width, bool transposedStore = false);
-
     explicit Matrix();
+
+    explicit Matrix(size_t height, size_t width, bool transposedStore = false);
 
     Matrix(const Matrix &other);
 

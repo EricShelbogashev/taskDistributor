@@ -1,8 +1,10 @@
 #include "ManagerTask.h"
 
 #include <boost/mpi.hpp>
-#include "../future/Package.h"
 #include "../utils/MatrixUtils.h"
+#include "../utils/ClasterMeasurementUtil.h"
+#include "CalculateTask.h"
+#include "MatrixBuilder.h"
 #include <fstream>
 
 std::pair<std::vector<int>, std::vector<int>> getScatterMeasurement(int dimensionNumber, int procNumber) {
@@ -19,6 +21,21 @@ std::pair<std::vector<int>, std::vector<int>> getScatterMeasurement(int dimensio
     return result;
 }
 
+void sendMatrix(const mpi::communicator &communicator, const ClasterMeasurementUtil &measurementUtil, std::vector<std::vector<float>> &dimensions, Matrix &matrix, int &packagesNumber) {
+
+    auto sizes = measurementUtil.calculateSizes(matrix);
+    mpi::scatter(communicator, sizes, packagesNumber, communicator.rank());
+
+    /* Sending parties all non-root processes. */
+    mpi::scatterv(communicator,
+                  matrix.getDimensions(),
+                  measurementUtil.calculateSizes(matrix),
+                  measurementUtil.calculateDisplacements(matrix),
+                  dimensions.data(),
+                  packagesNumber,
+                  communicator.rank());
+}
+
 Matrix ManagerTask::execute(const mpi::communicator &communicator) {
     /* Getting matricies from file. */
     std::ifstream infile(this->argv_[1]);
@@ -27,25 +44,28 @@ Matrix ManagerTask::execute(const mpi::communicator &communicator) {
     infile.close();
     assert(matrixA.width() == matrixB.height());
 
-    /* Sending first matrix to all non-root processes. */
-    mpi::broadcast(communicator, matrixA, communicator.rank());
-
-    /* Preparing to sending matrix parties all non-root processes. */
     int packagesNumber = -1;
-    auto conf = getScatterMeasurement(static_cast<int>(matrixB.width()), communicator.size());
-    assert(conf.first.size() == communicator.size());
+    /* Preparing to sending matrix parties all non-root processes. */
+    ClasterMeasurementUtil measurementUtil(communicator.size());
 
-    mpi::scatter(communicator, conf.first, packagesNumber, communicator.rank());
+    /* Sending matrix A parties all non-root processes. */
+    std::vector<std::vector<float>> matrixAPart(packagesNumber);
+    sendMatrix(communicator, measurementUtil, matrixAPart, matrixA, packagesNumber);
 
-    /* Sending matrix parties all non-root processes. */
+    /* Sending matrix B parties all non-root processes. */
     std::vector<std::vector<float>> matrixBPart(packagesNumber);
-    mpi::scatterv(communicator,
-                  matrixB.getDimensions(),
-                  conf.first,
-                  conf.second,
-                  matrixBPart.data(),
-                  packagesNumber,
-                  communicator.rank());
+    sendMatrix(communicator, measurementUtil, matrixBPart, matrixB, packagesNumber);
 
-    return Matrix(0, 0);
+    CalculateTask calcTask(this->argc_, this->argv_);
+    std::vector<std::vector<float>> matrixCPart = calcTask.execute(std::move(matrixAPart), std::move(matrixBPart));
+
+    /* Getting matrix C parties from non-root processes. */
+    std::vector<std::vector<float>> gathervResponse(matrixA.height());
+    boost::mpi::gatherv(communicator, matrixCPart, gathervResponse.data(), measurementUtil.calculateSizes(matrixA), communicator.rank());
+
+    /* Construct result matrix. */
+    MatrixBuilder matrixBuilder(matrixA.height(), matrixB.width());
+    matrixBuilder.addDimension(gathervResponse, 0);
+
+    return matrixBuilder.matrix();
 }

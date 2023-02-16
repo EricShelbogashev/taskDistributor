@@ -15,7 +15,13 @@ add_executable(taskDistributor
         src/model/ManagerTask.cpp
         src/model/ManagerTask.h
         src/utils/MatrixUtils.cpp
-        src/utils/MatrixUtils.h src/model/CalculateTask.cpp src/model/CalculateTask.h)
+        src/utils/MatrixUtils.h
+        src/model/CalculateTask.cpp
+        src/model/CalculateTask.h
+        src/utils/ClasterMeasurementUtil.cpp
+        src/utils/ClasterMeasurementUtil.h
+        src/model/MatrixBuilder.cpp
+        src/model/MatrixBuilder.h)
 
 #target_link_libraries(taskDistributor MPI::MPI_CXX)
 
