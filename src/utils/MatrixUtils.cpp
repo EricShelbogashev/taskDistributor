@@ -32,10 +32,10 @@ void utils::randomFillMatrix(Matrix &matrix) {
 void utils::saveMatrix(std::ostream &stream, const Matrix &matrix) {
     for (int i = 0; i < matrix.height(); ++i) {
         for (int j = 0; j < matrix.width(); ++j) {
-            stream << matrix(i, j);
+            stream << matrix(i, j) << " ";
         }
+        stream << "\n";
     }
-
 }
 
 Matrix utils::readMatrix(std::ifstream &stream) {

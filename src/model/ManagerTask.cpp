@@ -97,26 +97,25 @@ ManagerTask::execute(const mpi::communicator &world, const std::string &inFileNa
     Log::info("Rank=", world.rank(), "\t", matrixAPart, "\t", matrixBPart);
 
     CalculateTask calcTask(this->argc_, this->argv_);
-    std::vector<std::vector<float>> matrixCPart = calcTask.execute(std::move(matrixAPart), std::move(matrixBPart));
+    std::vector<float> matrixCPart = calcTask.execute(std::move(matrixAPart), std::move(matrixBPart));
 
     Log::info("Rank=", world.rank(), ", result=", matrixCPart);
 
     std::vector<int> sizes(world.size());
     boost::mpi::gather(world, static_cast<int>(matrixCPart.size()), sizes, world.rank());
     Log::info("Sizes=", sizes);
-    std::vector<std::vector<float>> gathervResponse(std::accumulate(sizes.begin(), sizes.end(), 0));
+    std::vector<float> gathervResponse(std::accumulate(sizes.begin(), sizes.end(), 0));
     boost::mpi::gatherv(world, matrixCPart.data(), static_cast<int>(matrixCPart.size()), gathervResponse.data(), sizes, world.rank());
     Log::info("Accumulated=", gathervResponse);
 
     Matrix resultMatrix(matrixA.height(), matrixB.width());
     for (int i = 0; i < resultMatrix.height(); ++i) {
         for (int j = 0; j < resultMatrix.width(); ++j) {
-//            resultMatrix(i, j) = gathervResponse[i*resultMatrix.height() + j];
+            resultMatrix(i, j) = gathervResponse[i*resultMatrix.height() + j];
         }
     }
 
     std::ofstream outFile(outFileName);
-//    utils::saveMatrix(outFile, matrixBuilder.matrix());
-//    Log::info(matrixBuilder.matrix());
+    utils::saveMatrix(outFile, resultMatrix);
     outFile.close();
 }
