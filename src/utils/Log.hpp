@@ -5,11 +5,12 @@
 #include <ostream>
 #include "Colormod.h"
 #include "Format.h"
+#include "PrettyPrint.h"
 
 class Log {
 public:
     template<typename ...Args>
-    static void info(std::ostream &ostream, Args... args) {
+    static void info(std::ostream &ostream, const Args&... args) {
         ostream << "[" << Color::Modifier(Color::Code::FG_GREEN) << "INFO"
                   << Color::Modifier(Color::Code::FG_DEFAULT) << "] ";
         ((ostream << args),...);
@@ -17,7 +18,7 @@ public:
     }
 
     template<typename ...Args>
-    static void info(Args... args) {
+    static void info(const Args&... args) {
         info(std::cout, args...);
     }
 };

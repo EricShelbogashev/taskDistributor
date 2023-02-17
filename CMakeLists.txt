@@ -18,11 +18,9 @@ add_executable(taskDistributor
         src/model/CalculateTask.h
         src/utils/ClusterMeasurementUtil.cpp
         src/utils/ClusterMeasurementUtil.h
-        src/model/MatrixBuilder.cpp
-        src/model/MatrixBuilder.h
         src/utils/Log.hpp
         src/utils/Colormod.h
-        src/utils/PrettyPrint.h src/utils/Format.h src/model/Cluster.cpp src/model/Cluster.h)
+        src/utils/PrettyPrint.h src/utils/Format.h src/model/Cluster.cpp src/model/Cluster.h src/model/GroupInfo.h src/model/GroupInfo.cpp)
 
 set(BOOST_ROOT /usr/include/boost)
 FIND_PACKAGE(Boost 1.4 COMPONENTS mpi serialization REQUIRED)

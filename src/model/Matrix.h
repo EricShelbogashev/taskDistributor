@@ -9,7 +9,7 @@
 
 class Matrix {
     friend class MatrixWrapper;
-
+    friend class MatrixBuilder;
 public:
     explicit Matrix();
 

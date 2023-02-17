@@ -7,11 +7,11 @@
 
 class ClusterMeasurementUtil {
 public:
-    explicit ClusterMeasurementUtil(const Matrix &matrix, size_t processNumber);
+    explicit ClusterMeasurementUtil(const Matrix &matrix, size_t processNumber, bool reverseBalancing = false);
 
-    [[nodiscard]] std::vector<int> sizes() const;
+    [[nodiscard]] const std::vector<int> &sizes() const;
 
-    [[nodiscard]] std::vector<int> displacements() const;
+    [[nodiscard]] const std::vector<int> &displacements() const;
 
     ClusterMeasurementUtil(const ClusterMeasurementUtil &other) = delete;
 
@@ -24,9 +24,9 @@ private:
     const Matrix &_matrix;
     mutable bool _is_sized = false;
     mutable bool _is_displacemented = false;
-
-    [[nodiscard]] std::vector<int> _calculateSizes(const Matrix &matrix) const;
-    [[nodiscard]] std::vector<int> _calculateDisplacements(const Matrix &matrix) const;
+    bool _reverseBalancing;
+    [[nodiscard]] const std::vector<int> &_calculateSizes(const Matrix &matrix) const;
+    [[nodiscard]] const std::vector<int> &_calculateDisplacements(const Matrix &matrix) const;
 };
 
 
