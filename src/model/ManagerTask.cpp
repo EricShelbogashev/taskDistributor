@@ -31,6 +31,32 @@ void sendMatrix(const mpi::communicator &communicator, const ClusterMeasurementU
                   communicator.rank());
 }
 
+void fillMinor(Matrix &res, size_t height, size_t width, size_t &globalOffset, size_t &offsetA, size_t &offsetB,
+               const std::vector<std::vector<float>> &gathervResponse) {
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            res(offsetA + i, offsetB + j) = gathervResponse[globalOffset][j];
+        }
+        ++globalOffset;
+    }
+    offsetB += width;
+}
+
+Matrix buildMatrix(size_t height, size_t width, const std::vector<std::vector<float>> &gathervResponse,
+                   const ClusterMeasurementUtil &measurementA, const ClusterMeasurementUtil &measurementB) {
+    Matrix res(height, width);
+    size_t offsetA = 0, offsetB = 0;
+    size_t globalOffset = 0;
+    for (int i: measurementA.sizes()) {
+        for (int j: measurementB.sizes()) {
+            fillMinor(res, i, j, globalOffset, offsetA, offsetB, gathervResponse);
+        }
+        offsetA += i;
+        offsetB = 0;
+    }
+    return res;
+}
+
 std::vector<GroupInfo> getTableInfo(const Cluster &cluster) {
     std::vector<GroupInfo> tableInfo;
     for (int i = 0; i < cluster.getHeight(); ++i) {
@@ -54,6 +80,8 @@ ManagerTask::execute(const mpi::communicator &world, const std::string &inFileNa
     Matrix matrixB = utils::readMatrix(infile);
 
     infile.close();
+    Log::info("matrixA.width()=", matrixA.width());
+    Log::info("matrixB.height()=", matrixB.height());
     assert(matrixA.width() == matrixB.height());
 
     Cluster &cluster = Cluster::instance();
@@ -97,25 +125,23 @@ ManagerTask::execute(const mpi::communicator &world, const std::string &inFileNa
     Log::info("Rank=", world.rank(), "\t", matrixAPart, "\t", matrixBPart);
 
     CalculateTask calcTask(this->argc_, this->argv_);
-    std::vector<float> matrixCPart = calcTask.execute(std::move(matrixAPart), std::move(matrixBPart));
+    std::vector<std::vector<float>> matrixCPart = calcTask.execute(std::move(matrixAPart), std::move(matrixBPart));
 
     Log::info("Rank=", world.rank(), ", result=", matrixCPart);
 
     std::vector<int> sizes(world.size());
     boost::mpi::gather(world, static_cast<int>(matrixCPart.size()), sizes, world.rank());
     Log::info("Sizes=", sizes);
-    std::vector<float> gathervResponse(std::accumulate(sizes.begin(), sizes.end(), 0));
-    boost::mpi::gatherv(world, matrixCPart.data(), static_cast<int>(matrixCPart.size()), gathervResponse.data(), sizes, world.rank());
+    std::vector<std::vector<float>> gathervResponse(std::accumulate(sizes.begin(), sizes.end(), 0));
+    boost::mpi::gatherv(world, matrixCPart.data(), static_cast<int>(matrixCPart.size()), gathervResponse.data(), sizes,
+                        world.rank());
     Log::info("Accumulated=", gathervResponse);
 
-    Matrix resultMatrix(matrixA.height(), matrixB.width());
-    for (int i = 0; i < resultMatrix.height(); ++i) {
-        for (int j = 0; j < resultMatrix.width(); ++j) {
-            resultMatrix(i, j) = gathervResponse[i*resultMatrix.height() + j];
-        }
-    }
+    Log::info("SizesA=", measurementA.sizes(), ", SizesB=", measurementB.sizes());
+    Matrix resultMatrix = buildMatrix(matrixA.height(), matrixB.width(), gathervResponse, measurementA, measurementB);
 
     std::ofstream outFile(outFileName);
     utils::saveMatrix(outFile, resultMatrix);
+    Log::info("matrix.height()=", resultMatrix.height(), ", matrix.width()=", resultMatrix.width(),"\n", resultMatrix);
     outFile.close();
 }

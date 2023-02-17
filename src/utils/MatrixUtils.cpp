@@ -34,7 +34,7 @@ void utils::saveMatrix(std::ostream &stream, const Matrix &matrix) {
         for (int j = 0; j < matrix.width(); ++j) {
             stream << matrix(i, j) << " ";
         }
-        stream << "\n";
+        stream << std::endl;
     }
 }
 

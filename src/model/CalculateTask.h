@@ -6,10 +6,10 @@
 #include "Matrix.h"
 
 class CalculateTask
-        : public ProcessContainer<std::vector<float>, const std::vector<std::vector<float>> &&, const std::vector<std::vector<float>> &&> {
+        : public ProcessContainer<std::vector<std::vector<float>>, const std::vector<std::vector<float>> &&, const std::vector<std::vector<float>> &&> {
 public:
     explicit CalculateTask(int argc, char **argv);
-    std::vector<float> execute(const std::vector<std::vector<float>> &&matrixAPart, const std::vector<std::vector<float>> &&matrixBPart) override;
+    std::vector<std::vector<float>> execute(const std::vector<std::vector<float>> &&matrixAPart, const std::vector<std::vector<float>> &&matrixBPart) override;
 };
 
 

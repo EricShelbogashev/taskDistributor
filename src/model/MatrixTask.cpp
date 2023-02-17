@@ -64,7 +64,7 @@ void MatrixTask::execute(const boost::mpi::communicator &world, int root, const 
     Log::info("Rank=", world.rank(), ", Calculate input=", matrixAPart, " ", matrixBPart);
 
     CalculateTask calcTask(this->argc_, this->argv_);
-    std::vector<float> matrixCPart = calcTask.execute(std::move(matrixAPart), std::move(matrixBPart));
+    std::vector<std::vector<float>> matrixCPart = calcTask.execute(std::move(matrixAPart), std::move(matrixBPart));
 
     Log::info("Rank=", world.rank(), ", Calculate result=", matrixCPart);
 
