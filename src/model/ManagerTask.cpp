@@ -13,7 +13,7 @@ int &sendSizes(const mpi::communicator &communicator, const ClusterMeasurementUt
     static int packagesNumber;
 
     auto &sizes = measurementUtil.sizes();
-//    Log::info(sizes);
+//    Log::log(sizes);
 
     mpi::scatter(communicator, sizes, packagesNumber, communicator.rank());
     return packagesNumber;
@@ -80,15 +80,15 @@ ManagerTask::execute(const mpi::communicator &world, const std::string &inFileNa
     Matrix matrixB = utils::readMatrix(infile);
 
     infile.close();
-    Log::info("matrixA.width()=", matrixA.width());
-    Log::info("matrixB.height()=", matrixB.height());
+    Log::log("matrixA.width()=", matrixA.width());
+    Log::log("matrixB.height()=", matrixB.height());
     assert(matrixA.width() == matrixB.height());
 
     Cluster &cluster = Cluster::instance();
     cluster.init(world.size(), world.rank());
-    Log::info("Manager process with rank ", cluster.getRoot(), ".\n", cluster);
+    Log::log("Manager process with rank ", cluster.getRoot(), ".\n", cluster);
 
-    /* Sending group info.  */
+    /* Sending group log.  */
     std::vector<GroupInfo> tableInfo = getTableInfo(cluster);
     GroupInfo _tmp{};
     boost::mpi::scatter(world, tableInfo, _tmp, world.rank());
@@ -97,7 +97,7 @@ ManagerTask::execute(const mpi::communicator &world, const std::string &inFileNa
     mpi::communicator communicatorMainHorizontal = world.split(std::get<1>(cluster(0, 0)), 0);
 
     /* (x, 0) - left main column. */
-    Log::info("communicatorMainVertical.size()=", communicatorMainVertical.size());
+    Log::log("communicatorMainVertical.size()=", communicatorMainVertical.size());
     ClusterMeasurementUtil measurementA(matrixA, communicatorMainVertical.size());
 
     /* Preparing to sending matrix parties to first column processes. */
@@ -109,7 +109,7 @@ ManagerTask::execute(const mpi::communicator &world, const std::string &inFileNa
 
 
     /* (0, y) - top main row. */
-    Log::info("communicatorMainHorizontal.size()=", communicatorMainHorizontal.size());
+    Log::log("communicatorMainHorizontal.size()=", communicatorMainHorizontal.size());
     ClusterMeasurementUtil measurementB(matrixB, communicatorMainHorizontal.size(), true);
 
     /* Preparing to sending matrix parties to first row processes. */
@@ -122,26 +122,26 @@ ManagerTask::execute(const mpi::communicator &world, const std::string &inFileNa
 
     boost::mpi::broadcast(communicatorMainVertical, matrixBPart, 0);
     boost::mpi::broadcast(communicatorMainHorizontal, matrixAPart, 0);
-    Log::info("Rank=", world.rank(), "\t", matrixAPart, "\t", matrixBPart);
+    Log::log("Rank=", world.rank(), "\t", matrixAPart, "\t", matrixBPart);
 
     CalculateTask calcTask(this->argc_, this->argv_);
     std::vector<std::vector<float>> matrixCPart = calcTask.execute(std::move(matrixAPart), std::move(matrixBPart));
 
-    Log::info("Rank=", world.rank(), ", result=", matrixCPart);
+    Log::log("Rank=", world.rank(), ", result=", matrixCPart);
 
     std::vector<int> sizes(world.size());
     boost::mpi::gather(world, static_cast<int>(matrixCPart.size()), sizes, world.rank());
-    Log::info("Sizes=", sizes);
+    Log::log("Sizes=", sizes);
     std::vector<std::vector<float>> gathervResponse(std::accumulate(sizes.begin(), sizes.end(), 0));
     boost::mpi::gatherv(world, matrixCPart.data(), static_cast<int>(matrixCPart.size()), gathervResponse.data(), sizes,
                         world.rank());
-    Log::info("Accumulated=", gathervResponse);
+    Log::log("Accumulated=", gathervResponse);
 
-    Log::info("SizesA=", measurementA.sizes(), ", SizesB=", measurementB.sizes());
+    Log::log("SizesA=", measurementA.sizes(), ", SizesB=", measurementB.sizes());
     Matrix resultMatrix = buildMatrix(matrixA.height(), matrixB.width(), gathervResponse, measurementA, measurementB);
 
     std::ofstream outFile(outFileName);
     utils::saveMatrix(outFile, resultMatrix);
-    Log::info("matrix.height()=", resultMatrix.height(), ", matrix.width()=", resultMatrix.width(),"\n", resultMatrix);
+    Log::log("matrix.height()=", resultMatrix.height(), ", matrix.width()=", resultMatrix.width(), "\n", resultMatrix);
     outFile.close();
 }

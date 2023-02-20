@@ -34,7 +34,7 @@ void MatrixTask::execute(const boost::mpi::communicator &world, int root, const 
     /* Preparing to receiving matrix parties from root process. */
     GroupInfo groupInfo{};
     boost::mpi::scatter(world, groupInfo, root);
-    Log::info("Received groupInfo=", groupInfo);
+    Log::log("Received groupInfo=", groupInfo);
 
     std::vector<std::vector<float>> matrixAPart;
     std::vector<std::vector<float>> matrixBPart;
@@ -61,12 +61,12 @@ void MatrixTask::execute(const boost::mpi::communicator &world, int root, const 
         boost::mpi::broadcast(communicatorColumn, matrixBPart, 0);
     }
 
-    Log::info("Rank=", world.rank(), ", Calculate input=", matrixAPart, " ", matrixBPart);
+    Log::log("Rank=", world.rank(), ", Calculate input=", matrixAPart, " ", matrixBPart);
 
     CalculateTask calcTask(this->argc_, this->argv_);
     std::vector<std::vector<float>> matrixCPart = calcTask.execute(std::move(matrixAPart), std::move(matrixBPart));
 
-    Log::info("Rank=", world.rank(), ", Calculate result=", matrixCPart);
+    Log::log("Rank=", world.rank(), ", Calculate result=", matrixCPart);
 
     /* Sending matrix C parties to root process. */
     boost::mpi::gather(world, static_cast<int>(matrixCPart.size()), root);
