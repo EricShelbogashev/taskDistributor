@@ -5,29 +5,31 @@
 #include <vector>
 #include <sstream>
 #include <tuple>
+#include <unordered_set>
+#include "../model/GroupInfo.h"
 
-template<typename T>
-std::string vectorToString(const std::vector<T> &vector);
+template<typename T, template<typename ...> class Container>
+std::string containerToString(const Container<T> &container);
 
 template<typename T>
 std::ostream &operator<<(std::ostream &os, const std::vector<std::vector<T>> &vector) {
-    os << vectorToString(vector);
+    os << containerToString(vector);
     return os;
 }
 
 template<typename T>
 std::ostream &operator<<(std::ostream &os, const std::vector<T> &vector) {
-    os << vectorToString(vector);
+    os << containerToString(vector);
     return os;
 }
 
-template<typename T>
-std::string vectorToString(const std::vector<T> &vector) {
+template<typename T, template<typename ...> class Container>
+std::string containerToString(const Container<T> &container) {
     std::stringstream stringstream;
     stringstream << "{";
-    for (int i = 0; i < vector.size(); ++i) {
-        stringstream << vector[i];
-        if (i != vector.size() - 1) {
+    for (int i = 0; i < container.size(); ++i) {
+        stringstream << container[i];
+        if (i != container.size() - 1) {
             stringstream << ", ";
         }
     }
@@ -35,6 +37,19 @@ std::string vectorToString(const std::vector<T> &vector) {
     return stringstream.str();
 }
 
+
+template<class T>
+std::ostream &operator<<(std::ostream &os, const std::unordered_set<T> &set) {
+    std::stringstream stringstream;
+    stringstream << "{ ";
+    for (auto &entry: set) {
+        os << set << " ";
+    }
+    stringstream << "}";
+    return os << stringstream.str();
+}
+
+std::ostream &operator<<(std::ostream &os, const GroupInfo::Role &role);
 
 // https://stackoverflow.com/questions/6245735/pretty-print-stdtuple
 template<class TupType, size_t... I>

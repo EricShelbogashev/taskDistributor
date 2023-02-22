@@ -72,7 +72,7 @@ std::ostream &operator<<(std::ostream &os, const Cluster &cluster) {
     os << "\t*";
     for (size_t i = 0; i < cluster.getHeight(); ++i) {
         for (size_t j = 0; j < cluster.getWidth(); ++j) {
-            std::cout << cluster(i, j) << " ";
+            std::cout << cluster(i, j) << "\t";
         }
         if (i != cluster.getHeight() - 1) {
             std::cout << std::endl << "\t ";

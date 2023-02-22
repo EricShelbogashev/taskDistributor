@@ -62,10 +62,18 @@ std::vector<GroupInfo> getTableInfo(const Cluster &cluster) {
     for (int i = 0; i < cluster.getHeight(); ++i) {
         for (int j = 0; j < cluster.getWidth(); ++j) {
             const std::tuple<size_t, int, int> &r = cluster(i, j);
-            tableInfo.emplace_back(std::get<1>(r), std::get<2>(r),
-                                   i == 0 ? GroupInfo::MAIN_ROW :
-                                   j == 0 ? GroupInfo::MAIN_COLUMN :
-                                   GroupInfo::DEFAULT);
+            GroupInfoBuilder groupInfoBuilder;
+            groupInfoBuilder.setRow(std::get<1>(r)).setColumn(std::get<2>(r));
+            if (i == 0) {
+                groupInfoBuilder.addRole(GroupInfo::MAIN_ROW);
+            }
+            if (j == 0) {
+                groupInfoBuilder.addRole(GroupInfo::MAIN_COLUMN);
+            }
+            if (i != 0 && j != 0) {
+                groupInfoBuilder.addRole(GroupInfo::DEFAULT);
+            }
+            tableInfo.emplace_back(groupInfoBuilder.build());
         }
     }
     return tableInfo;
@@ -106,7 +114,7 @@ ManagerTask::execute(const mpi::communicator &world, const std::string &inFileNa
     /* Sending matrix parties to first column processes. */
     std::vector<std::vector<float>> matrixAPart(partSizeA);
     sendMatrix(communicatorMainVertical, measurementA, matrixAPart, matrixA, partSizeA);
-
+    boost::mpi::broadcast(communicatorMainHorizontal, matrixAPart, 0);
 
     /* (0, y) - top main row. */
     Log::log("communicatorMainHorizontal.size()=", communicatorMainHorizontal.size());
@@ -115,13 +123,11 @@ ManagerTask::execute(const mpi::communicator &world, const std::string &inFileNa
     /* Preparing to sending matrix parties to first row processes. */
     int partSizeB = sendSizes(communicatorMainHorizontal, measurementB);
 
-    /* Sending matrix parties to first column processes. */
+    /* Sending matrix parties to first row processes. */
     std::vector<std::vector<float>> matrixBPart(partSizeB);
     sendMatrix(communicatorMainHorizontal, measurementB, matrixBPart, matrixB, partSizeB);
 
-
     boost::mpi::broadcast(communicatorMainVertical, matrixBPart, 0);
-    boost::mpi::broadcast(communicatorMainHorizontal, matrixAPart, 0);
     Log::log("Rank=", world.rank(), "\t", matrixAPart, "\t", matrixBPart);
 
     CalculateTask calcTask(this->argc_, this->argv_);
